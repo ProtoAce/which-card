@@ -64,6 +64,21 @@ h3{font:600 15px var(--sans);color:var(--dry);margin:34px 6px 0}
 .chips button{min-height:44px;padding:0 18px;border-radius:999px;font:700 15px var(--sans);color:var(--clay-ink);background:transparent;border:2px solid var(--clay);transition:all .3s ease}
 .chips button:active{transform:scale(.95)}
 .chips button.on{background:var(--moss);border-color:var(--moss);color:var(--mist);box-shadow:var(--soft)}
+.sub{margin:2px 6px 0}
+#chips{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 76px)}
+.ct{margin-left:8px;font-size:12px;font-weight:700;background:rgba(193,140,93,.18);padding:1px 8px;border-radius:999px}
+.chips .on .ct{background:rgba(243,244,241,.25)}
+#cout .res{margin-top:18px}
+.cat{margin:0 0 4px;font-weight:700;color:var(--bark)}
+h4{font:700 20px var(--serif);margin:26px 4px 12px}h4 span{font:400 15px var(--sans);color:var(--dry)}
+.sl{display:flex;flex-wrap:wrap;gap:8px}
+.st,.more{min-height:44px;padding:0 16px;border-radius:999px;font:700 15px var(--sans);transition:transform .3s ease,background .3s ease}
+.st{color:var(--fg);background:var(--card);border:1.5px solid var(--line);box-shadow:var(--soft)}
+.st b,.key b{color:var(--moss);margin-right:5px}
+.more{color:var(--moss);background:transparent;border:2px solid var(--moss)}
+.st:active,.more:active{transform:scale(.95)}
+.key{margin:14px 6px 0}
+@media(hover:hover){.st:hover{transform:translateY(-2px)}.more:hover{background:rgba(93,112,82,.1)}}
 @media(hover:hover){.m:hover{transform:translateY(-2px);box-shadow:0 20px 40px -10px rgba(93,112,82,.15)}.chips button:hover:not(.on){background:rgba(193,140,93,.1)}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -84,8 +99,10 @@ h3{font:600 15px var(--sans);color:var(--dry);margin:34px 6px 0}
 </div>
 <div class="list" id="list"></div>
 <div id="out" aria-live="polite"></div>
-<h3>Not listed? Pick a category</h3>
+<h3>Browse by category</h3>
+<p class="mute sub">Tap one to see its stores and what it earns.</p>
 <div class="chips" id="chips"></div>
+<div id="cout"></div>
 </main>
 <script>
 // Scene+ point value used for comparing: 1 point = 1 cent (travel redemption, per the offer terms).
@@ -351,8 +368,9 @@ Zab Bite Express|din|zab bite express||
 Zehrs|g5|||`.split("\n").map(l=>{const[n,c,a,f,nt]=l.split("|");return{n,c,a:(n+" "+a).toLowerCase(),q:/\?/.test(f||""),x:/A/.test(f||""),k:/C/.test(f||""),nt:nt||""}});
 
 const $=id=>document.getElementById(id);
-let pick=null, cat=null;
+let pick=null, cat=null, all=false;
 const norm=s=>s.toLowerCase().replace(/[’'.]/g,"");
+const N={};Object.keys(CATS).forEach(k=>N[k]=D.filter(m=>m.c===k).length);
 
 function render(){
   const q=norm($("q").value.trim());
@@ -362,52 +380,75 @@ function render(){
     hits.forEach(m=>{
       const b=document.createElement("button");b.className="m";
       b.innerHTML=`<span>${m.n}</span><em>${CATS[m.c].n}</em>`;
-      b.onclick=()=>{pick=m;cat=null;$("q").value=m.n;$("q").blur();render();reveal()};
+      b.onclick=()=>choose(m);
       L.appendChild(b);
     });
-    if(!hits.length)L.innerHTML=`<p class="none">No match. Pick a category below.</p>`;
+    if(!hits.length)L.innerHTML=`<p class="none">No match. Browse a category below.</p>`;
   }
   const chips=$("chips");chips.innerHTML="";
   Object.keys(CATS).forEach(k=>{
-    const b=document.createElement("button");b.textContent=CATS[k].n;
-    b.setAttribute("aria-pressed",cat===k&&!pick);
-    if(cat===k&&!pick)b.className="on";
-    b.onclick=()=>{cat=k;pick=null;$("q").value="";render();reveal()};
+    const b=document.createElement("button");
+    b.innerHTML=`${CATS[k].n}<span class="ct">${N[k]}</span>`;
+    b.setAttribute("aria-pressed",cat===k);
+    if(cat===k)b.className="on";
+    b.onclick=()=>{cat=cat===k?null:k;pick=null;all=false;$("q").value="";render();if(cat)reveal($("chips"),"start")};
     chips.appendChild(b);
   });
+  panel();
   result();
 }
-function reveal(){setTimeout(()=>$("out").scrollIntoView({behavior:"smooth",block:"nearest"}),60)}
+function choose(m){pick=m;$("q").value=m.n;$("q").blur();render();reveal($("out"),"nearest")}
+function reveal(el,pos){setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:pos}),60)}
 
-function result(){
-  const o=$("out");
-  const c=pick?pick.c:cat;
-  if(!c){o.innerHTML="";return}
+function panel(){
+  const o=$("cout");
+  if(!cat){o.innerHTML="";return}
+  const L=D.filter(m=>m.c===cat).sort((a,b)=>b.k-a.k||a.n.localeCompare(b.n));
+  const shown=all?L:L.slice(0,12);
+  o.innerHTML=card(cat,null)+`<h4>Stores <span>(${L.length})</span></h4><div class="sl" id="sl"></div>`;
+  const sl=$("sl");
+  shown.forEach(m=>{
+    const b=document.createElement("button");b.className="st";
+    b.innerHTML=(m.k?"<b>✓</b>":"")+m.n;
+    b.onclick=()=>choose(m);
+    sl.appendChild(b);
+  });
+  if(L.length>12){
+    const b=document.createElement("button");b.className="more";
+    b.textContent=all?"Show fewer":`Show all ${L.length}`;
+    b.onclick=()=>{all=!all;panel()};
+    sl.appendChild(b);
+  }
+  o.insertAdjacentHTML("beforeend",`<p class="mute key"><b>✓</b> confirmed by cardholder reports. The rest are my best guess. Tap a store for details.</p>`);
+}
+
+function card(c,m){
   const fx=$("fx").checked, amt=parseFloat($("amt").value)||100;
-  const noAmex=pick&&pick.x;
+  const noAmex=m&&m.x;
   const rate=fx?1:CATS[c].r;
   const useAmex=!noAmex&&rate*PT*100>WS;
   const pts=Math.floor(amt*rate);
   const wsCash=(amt*WS/100);
+  const title=m?"":`<p class="mute cat">${CATS[c].n}</p>`;
   let h;
   if(useAmex){
-    h=`<section class="res"><h2>Scotia Amex Gold</h2>
+    h=`<section class="res">${title}<h2>Scotia Amex Gold</h2>
     <div class="big">${pts.toLocaleString()} pts</div>
     <p class="mute">${rate}x on $${amt.toFixed(2)} ≈ $${(pts*PT).toFixed(2)} in travel value</p>
     <table class="cmp"><tr><td>Amex Gold</td><td>${rate}% back (${rate} pts/$)</td></tr><tr><td>Wealthsimple</td><td>2% = $${wsCash.toFixed(2)} cash</td></tr></table>`;
   }else{
-    h=`<section class="res ws"><h2>Wealthsimple Visa</h2>
+    h=`<section class="res ws">${title}<h2>Wealthsimple Visa</h2>
     <div class="big">$${wsCash.toFixed(2)} back</div>
     <p class="mute">2% on $${amt.toFixed(2)}</p>
     <table class="cmp"><tr><td>Amex Gold</td><td>${noAmex?"not accepted":rate+"% ("+rate+" pt/$)"}</td></tr><tr><td>Wealthsimple</td><td>2% cash</td></tr></table>`;
   }
   if(noAmex)h+=`<p class="warn">This merchant doesn't take Amex in Canada.</p>`;
   if(fx)h+=`<p class="mute">Foreign currency: Amex earns only 1x (no foreign transaction fee, though).</p>`;
-  if(pick){if(pick.k)h+=`<p class="mute">Confirmed by cardholder reports.</p>`;else if(pick.q)h+=`<p class="warn">My guess from the merchant type. Check your first statement.</p>`;else h+=`<p class="mute">Likely, based on merchant type. Not confirmed.</p>`;if(pick.nt)h+=`<p class="warn">${pick.nt}</p>`}
+  if(m){if(m.k)h+=`<p class="mute">Confirmed by cardholder reports.</p>`;else if(m.q)h+=`<p class="warn">My guess from the merchant type. Check your first statement.</p>`;else h+=`<p class="mute">Likely, based on merchant type. Not confirmed.</p>`;if(m.nt)h+=`<p class="warn">${m.nt}</p>`}
   if(!$("amt").value)h+=`<p class="mute">Showing a $100 example. Enter an amount above.</p>`;
-  h+=`<p class="mute">Valuing 1 point at 1¢.</p></section>`;
-  o.innerHTML=h;
+  return h+`<p class="mute">Valuing 1 point at 1¢.</p></section>`;
 }
+function result(){$("out").innerHTML=pick?card(pick.c,pick):"";if(cat)panel()}
 
 $("q").addEventListener("input",()=>{pick=null;if($("q").value)cat=null;render()});
 $("amt").addEventListener("input",result);
