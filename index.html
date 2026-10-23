@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FDFCF8">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Which card?">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Which card?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FDFCF8;--fg:#2C2C24;--moss:#5D7052;--mist:#F3F4F1;--clay:#C18C5D;--clay-ink:#8F5F36;--sand:#E6DCCD;--bark:#4A4A40;--stone:#F0EBE5;--dry:#6F6F63;--line:#DED8CF;--bad:#A85448;--card:#FEFEFA;
+--soft:0 4px 20px -2px rgba(93,112,82,.15);--float:0 10px 40px -10px rgba(193,140,93,.2);
+--serif:'Fraunces',Georgia,serif;--sans:'Nunito',ui-rounded,'SF Pro Rounded',system-ui,sans-serif;
+--blob1:60% 40% 30% 70%/60% 30% 70% 40%;--blob2:30% 70% 70% 30%/30% 30% 70% 70%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--fg);font:400 16px/1.5 var(--sans);overflow-x:hidden;touch-action:manipulation}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.04;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.blobs{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.blobs i{position:absolute;filter:blur(56px)}
+.blobs i:nth-child(1){width:300px;height:300px;top:-90px;right:-110px;background:rgba(93,112,82,.18);border-radius:var(--blob1)}
+.blobs i:nth-child(2){width:280px;height:280px;bottom:-80px;left:-110px;background:rgba(193,140,93,.22);border-radius:var(--blob2)}
+main{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 8px) max(16px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom,0px) + 40px) max(16px,env(safe-area-inset-left))}
+header{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:20;display:flex;align-items:center;gap:12px;padding:8px 20px 8px 8px;border-radius:999px;background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(222,216,207,.5);box-shadow:var(--soft)}
+.logo{width:40px;height:40px;border-radius:50%;background:var(--moss);display:grid;place-items:center;flex:none}
+header h1{font:700 20px/1.1 var(--serif);margin:0;letter-spacing:-.01em}
+header small{margin-left:auto;color:var(--dry);font-size:13px;font-weight:600}
+.field{margin-top:24px}
+input[type=search],input[type=number]{-webkit-appearance:none;appearance:none;width:100%;height:52px;padding:0 22px;font:600 16px var(--sans);color:var(--fg);background:rgba(255,255,255,.55);border:1.5px solid var(--line);border-radius:999px;transition:box-shadow .3s,border-color .3s}
+input::placeholder{color:#8A8A7E;font-weight:400}
+input:focus-visible,.tg input:focus-visible+span,button:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px rgba(93,112,82,.5)}
+input[type=search]::-webkit-search-cancel-button{display:none}
+.row{display:flex;gap:10px;margin-top:12px}
+.row input[type=number]{flex:1;min-width:0}
+.tg{position:relative;flex:none}
+.tg input{position:absolute;opacity:0;inset:0}
+.tg span{display:flex;align-items:center;height:52px;padding:0 18px;border-radius:999px;border:2px solid var(--clay);color:var(--clay-ink);font:700 15px var(--sans);transition:all .3s ease;white-space:nowrap}
+.tg input:checked+span{background:var(--moss);border-color:var(--moss);color:var(--mist);box-shadow:var(--soft)}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.m{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:56px;text-align:left;padding:10px 18px;font:700 16px var(--sans);color:var(--fg);background:var(--card);border:1px solid rgba(222,216,207,.6);box-shadow:var(--soft);transition:transform .3s ease,box-shadow .3s ease}
+.m:nth-child(3n+1){border-radius:28px 28px 28px 10px}.m:nth-child(3n+2){border-radius:10px 28px 28px 28px}.m:nth-child(3n){border-radius:28px 10px 28px 28px}
+.m:active{transform:scale(.97)}
+.m em{font:600 13px var(--sans);font-style:normal;color:var(--bark);background:var(--sand);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.none{margin:14px 6px 0;color:var(--dry)}
+.res{margin-top:22px;padding:26px 22px 20px;background:var(--card);border:3px solid rgba(93,112,82,.3);border-radius:4rem 2rem 2rem 2rem;box-shadow:var(--soft);animation:settle .5s ease-out}
+.res.ws{border-color:rgba(193,140,93,.45);box-shadow:var(--float);border-radius:2rem 4rem 2rem 2rem}
+@keyframes settle{from{opacity:0;transform:translateY(10px)}}
+.res h2{font:700 25px/1.15 var(--serif);margin:0;color:var(--moss)}
+.ws h2,.ws .big{color:var(--clay-ink)}
+.big{font:800 39px/1.1 var(--serif);margin:8px 0 2px;color:var(--moss);letter-spacing:-.02em}
+p{margin:8px 0}
+.mute{color:var(--dry);font-size:14px}.warn{color:var(--bad);font-size:14px;font-weight:600}
+.cmp{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:15px}
+.cmp td{padding:9px 0;border-top:1.5px dashed var(--line)}.cmp td:last-child{text-align:right;font-weight:700}
+h3{font:600 15px var(--sans);color:var(--dry);margin:34px 6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.chips button{min-height:44px;padding:0 18px;border-radius:999px;font:700 15px var(--sans);color:var(--clay-ink);background:transparent;border:2px solid var(--clay);transition:all .3s ease}
+.chips button:active{transform:scale(.95)}
+.chips button.on{background:var(--moss);border-color:var(--moss);color:var(--mist);box-shadow:var(--soft)}
+@media(hover:hover){.m:hover{transform:translateY(-2px);box-shadow:0 20px 40px -10px rgba(93,112,82,.15)}.chips button:hover:not(.on){background:rgba(193,140,93,.1)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="blobs" aria-hidden="true"><i></i><i></i></div>
+<main>
+<header>
+  <span class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F3F4F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="5"/><path d="M2 10h20"/></svg></span>
+  <h1>Which card?</h1><small>Amex Gold or WS</small>
+</header>
+<div class="field">
+  <input id="q" type="search" placeholder="Where are you buying?" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Merchant name">
+  <div class="row">
+    <input id="amt" type="number" inputmode="decimal" placeholder="Amount $ (optional)" aria-label="Purchase amount">
+    <label class="tg"><input id="fx" type="checkbox"><span>Foreign</span></label>
+  </div>
+</div>
+<div class="list" id="list"></div>
+<div id="out" aria-live="polite"></div>
+<h3>Not listed? Pick a category</h3>
+<div class="chips" id="chips"></div>
+</main>
+<script>
+// Scene+ point value used for comparing: 1 point = 1 cent (travel redemption, per the offer terms).
+const PT=0.01, WS=2;
+const CATS={
+ g6:{r:6,n:"Sobeys-family grocery (6x)"},
+ g5:{r:5,n:"Grocery (5x)"},
+ din:{r:5,n:"Dining (5x)"},
+ ent:{r:5,n:"Entertainment (5x)"},
+ gas:{r:3,n:"Gas (3x)"},
+ trn:{r:3,n:"Transit (3x)"},
+ str:{r:3,n:"Streaming (3x)"},
+ oth:{r:1,n:"Everything else (1x)"}
+};
+// name|category|aliases|flags|note   (? = my guess, C = confirmed by cardholder reports, A = no Amex)
+const D=`|g5|11222 macs  convenience s|?|
+7-Eleven|gas|7 eleven store #32845 7-eleven store #37882|?|
+A&W|din|a and w||
+Air Canada|oth|flight flight|C|
+Airbnb|oth| airbnb * hmxzcw44ad||
+Alberni Liquor Store|g5|alberni liquor store|?|
+aliexpress|oth|aliexpress||
+Amazon|oth| amzn mktp ca*563655ya1 amzn mktp ca*cm3z55h63 amzn mktp ca*pk4hq25p3 amzn mktp ca*q10wp4ul3 amzn mktp ca*sf79y1vd3 amzn mktp ca*tw3j15033||
+Amazon Prime Video|str|prime video|?|
+Angry Otter @ Barnet|g5|angry otter @ barnet|?|
+Apple|oth|apple store||
+Apple TV+|str|apple tv||
+Barnett / Johnson|gas|barnett / johnson 37889||
+BC Ferries|trn|bcf ferry bcf - coastal renaissance|C|
+BC Liquor|g5|bc liquor liquor store liquor lcbo bc liquor # 195 bc liquor #118 bc liquor #153 bc liquor #208|C|
+Best Buy|oth|||
+Big Daddys Fish Fry|din|big daddys fish fry||
+Black + Blue Vancouver|din|black + blue vancouver||
+Blenz|din|||
+Booster Juice|din|||
+Boston Pizza|din|||
+Brandt'S Creek Liquor Sto|g5|brandt's creek liquor sto|?|
+Browns Socialhouse|din| browns sh newport vill browns sh queen e||
+Burger King|din|||
+CAA Insurance|oth|caa|C|
+Cactus Club|din| cactus club bentall||
+Caffe Artigiano Shipyards|din|caffe artigiano shipyards||
+Canadian Tire|oth| canadian tire #601||
+Canco Petroleum|gas|canco petroleum #267 p||
+Cathay Pacific|oth|cathay|C|
+Chao Mami Express|din|sq *chao mami express||
+Chatime|din||C|
+Chevron|gas| chv43039 nicola valley chv43054 poco chevron chv43128 city park che||
+Chick-fil-A|din|chickfila|C|
+Chipotle|din| chipotle 5152||
+Choices Market|g5|||
+Cineplex|ent|famous players movies movies cinema famous player 1412qps|C|
+Circle K|gas|?||
+Cm Chicken Coquitlam Cen|din|cm chicken coquitlam cen||
+Co-op Food Store|g6|coop co-op calgary co-op||
+Compass (TransLink)|trn|compass account burnab compass vending burnab compass web burnaby bc||
+Confederation Bridge|trn||C|
+Costco|oth|wholesale|A|
+Costco Gas|oth|costco fuel|A|
+Crave|str||C|
+Creekside Market|g5|creekside market|?|
+Dairy Queen|din|dq||
+Dave & Buster's|ent|dave and busters||
+Dave's Hot Chicken|din|daves|C|
+Dex Burger Bar & Vinam V|din|dex burger bar & vinam v||
+Disney+|str|disney plus||
+Dollarama|oth|||
+Dollars & Cents Westwood|oth|dollars & cents westwood||
+Domino's|din|dominos||
+Donair Dude - PORT|din|tst-donair dude - port||
+DoorDash|din|door dash|?|
+Earls|din|||
+Enterprise CarShare|trn|car share|C|
+Esso|gas| ioco esso 37872 westview esso 37882||
+Fandango|ent|||
+Farm Boy|g5|||
+Fergies Cafe|din|tst-fergies cafe||
+Five Guys|din|||
+Flair Airlines|oth|flair airlines 3s9rhq||
+Flo Charging|oth|flo ev|C|
+Food Basics|g5||C|
+Foodland|g6|participating co-ops foodland co-ops|C|
+Fortinos|g5|||
+Fortune Sound Club|din|sq *fortune sound club|?|
+Freehouse - The La|din|tst-freehouse - the la||
+Fresh Counter & Cateri|din|fresh counter & cateri||
+FreshCo|g6|chalo|C|
+Freshii|din|||
+Fujiya Japanese Fdsqco|g5|fujiya japanese fdsqco|?|
+Funky Winker Beans|din|funky winker beans||
+Galleria Supermarket|g5|galleria|C|
+Giant Tiger|oth|||
+Greco's Fresh Markets|g5|grecos|C|
+H Mart|g5|hmart||
+H&M|oth|hm ca0030||
+Happy Slice Pizza|din|happy slice pizza||
+Harvey's|din|harveys||
+Havana Vancouver|din|tst-havana vancouver||
+Hector'S Your Independ|g5|hector's your independ||
+HeyTea|din||C|
+Home Depot|oth| the home depot #7063||
+Home Hardware|oth|home building centre home furniture||
+Hotel|oth|marriott hilton||
+Hungry Zus|din|sq *hungry zus||
+Husky|gas|||
+Hybar Naturally|din|hybar naturally||
+IGA|g6|participating igas iga west|?C|Reported 6x at IGA West and IGA Extra (Quebec). Other IGAs: only participating locations.
+IGA Extra|g6|quebec|C|
+IKEA|oth|||
+Independent Grocer|g5|your independent grocer||
+Jak'S Wine Beer Spirits|g5|jak's wine beer spirits|?|
+Javelin|str|sport app|C|
+Joey|din|||
+John3:16 Malaysian Delights|din||C|
+Kelly Obryans|din|kelly obryans||
+Kelowna Fruit Stand|g5|sq *kelowna fruit stand|?|
+Kelowna Oeb|din|kelowna oeb||
+KFC|din|||
+La Ruota|din|la ruota||
+Landmark Cinemas|ent|||
+Lawtons Drugs|g6|lawtons||
+Lee'S Donuts Bentall|din|sq *lee's donuts bentall|?|
+Les Marches Tradition|g6||C|
+Lime|trn|lime*2 rides krkj lime*2 rides xlr4 lime*ride krkj lime*ride xlr4|?|
+Loblaws|g5|||
+London Drugs|oth|||
+London Public House|din|london public house||
+Long Beach * Lets Camp|ent|long beach * lets camp|?|
+Long Beach Campground|oth|long beach campground||
+Long Beach Lodge Resort|din|long beach lodge resort||
+Longo's|g5|longos longos|C|
+Lonsdale Donair Plus|din|lonsdale donair plus||
+Lordco Parts #6|oth|lordco parts #6||
+Lougheed Village Bar And|din|lougheed village bar and||
+Lululemon|oth|||
+Lyft|trn|?||
+Ma Now Thai Kitche|din|tst-ma now thai kitche||
+Maan Farms|g5|sq *maan farms|?|
+Mags|din|sq *mags 99 squamish||
+Marketplace IGA|g6|marketplace iga 36|?|
+Marriott|oth|hotel|C|
+Maruhachi Ramen|din||C|
+Mary Brown's|din|||
+Maxi|g5|||
+McDonald's|din|mcdonalds mcd mcdonald's #22390 mcdonald's # 10429 mcdonald's # 13687|C|
+Megabite Pizza|din|megabite pizza||
+Mermaid Tales Bookshop|oth|mermaid tales bookshop||
+Metro|g5||C|
+Mighty Moose Ice Crea|din|sq *mighty moose ice crea||
+Milestones|din|||
+Mobil|gas|||
+Montana's|din|||
+Moxie's|din|||
+Mr. Shawarma Melville|din|mr. shawarma melville||
+Nagano Japanese Restau|din|nagano japanese restau||
+Nando's|din|nandos|C|
+NAPA Auto Parts|oth|0325-napa coquitlam 0397-napa port kells m||
+Nesters Market|g5|||
+Netflix|str|||
+New Port Liquor Store|g5|new port liquor store|?|
+No Frills|g5|nofrills||
+North Point Brewing Port|din|north point brewing port|?|
+OC Transpo|trn|ottawa||
+Old Country Market|g5|old country market|?|
+Original Joe's|din|||
+Osmows|oth||C|Reported only 1x via the mobile app, so app orders may code differently.
+Otter Co-Op Whistler Gb|gas|otter co-op whistler gb|?|
+Panago|din|||
+Panera|din|||
+Paramount+|str|paramount paramount|C|
+Parking|oth|concord parking easypark south coast british co south coast british colum|?|
+Petro-Canada|gas|petro canada petrocan petro-canada 36997 petro-canada 69820 petro-canada 69975 petro-canada 92529||
+Pharmasave|oth|pharmasave 1101||
+Pho Holiday|din|pho holiday||
+Pick & Chews|din|pick & chews||
+Pioneer|gas|||
+Pizza Garden|din|sq *pizza garden||
+Pizza Hut|din|||
+Pizza Pizza|din|||
+Pne Food & Beverage|din|pne food & beverage||
+Pollen Nation Designs|oth|sq *pollen nation designs||
+Popeyes|din|||
+Presto|trn|go transit|C|
+Provant International Foo|g5|provant international foo|?|
+Provigo|g5|||
+Pusateri's|g5|||
+Rachelle Bery|g6|rachelle béry|C|
+Real Canadian Superstore|g5|superstore||
+Rec Room|ent|||
+Rewind Beer Co.|din|tst-rewind beer co.||
+Rexall|oth|pharmacy||
+Rhino Coffee House|din|rhino coffee house||
+Rice N Spice|din|rice n spice||
+Robson Wine, Beer & Spiri|g5|robson wine, beer & spiri|?|
+Safeway|g6||C|
+Save-On-Foods|g5|save on foods saveon||
+Scandinave Spa|oth|scandinave spa||
+Searun Fly And Tackle|oth|searun fly and tackle||
+Seaside Donair Kebab|din|seaside donair kebab||
+Second Cup|din|||
+Sephora|oth|||
+Shandhar Gas Bar|gas|shandhar gas bar||
+Shed Restaurant|din|tst-shed restaurant||
+Shell|gas|v-power shell c12526|C|
+Shoppers Drug Mart|oth|shoppers pharmacy||
+Skip The Dishes|din|skipthedishes skip skip|C|
+Sobeys|g6||C|
+Southside Diner|din|southside diner||
+Sp Caravan Shop|oth|sp caravan shop||
+Spotify|str| spotify p411b6b144 spotify p4219e6ba5 spotify p4329fcbff spotify p443ca767e spotify p454dc0cbd spotify p467787534 spotify p47a32529f|?|
+Squamish Valley Gasqps Ba|gas|squamish valley gasqps ba||
+St. James Well Pub|din|tst-st. james well pub||
+Staples|oth|||
+Starbucks|din||C|Card reload earned 5x; buying a Starbucks gift card online earned only 1x.
+Steam|oth|steam purchase||
+Steamworks Brewpub|din|steamworks brewpub||
+STM|trn|montreal metro||
+Straight Outta Brooklyn|din|straight outta brooklyn||
+Subway|din| subway 51885||
+Super C|g5|||
+Swell Education Ltd.|ent|sq *swell education ltd.|?|
+Swiss Chalet|din||C|
+T&T Supermarket|g5|t and t tnt t&t supermarket #008||
+Taco Bell|din|||
+The Bagel Stop|din|the bagel stop||
+The Blarney  Stone|din|ls the blarney  stone|?|
+The Dogfather Mobile|din|sq *the dogfather mobile||
+The Keg|din|keg||
+The Parkside Brewe|din|tst-the parkside brewe||
+The Soup Meisters Nephew|din|the soup meisters nephew||
+Thrifty Foods|g6|thrifty thrifty foods #9470|C|
+Ticketleader Online Pn|ent|ticketleader online pn|?|
+Ticketmaster|ent|concert tickets|C|
+Tim Hortons|din|timmies tims timmies tims tim hortons #4779|C|Reported 5x via the mobile app.
+Tobys Pub & Grill-(Beer|g5|tobys pub & grill-(beer|?|
+Tofino Brewing Company|g5|tofino brewing company|?|
+Topgolf|ent|||
+Tops Chef|din|tops chef||
+TransLink|trn|compass skytrain||
+Triple O's|din|triple o's 533||
+TTC|trn|toronto transit||
+Uber|trn|rideshare rideshare taxi uber canada/ubertrip|C|
+Uber Eats|din|ubereats|?|
+Ultramar|gas|||
+Uncle Tetsu|din|cheesecake|C|
+Uniqlo|oth|uniqlo canada pos_ca_coq_||
+Value Village|oth|value village # 2103||
+Vandoner Shawarma Ltd.|din|vandoner shawarma ltd.||
+Via Rail|trn|train|?|
+Voila|g6|voilà voila par iga voila by sobeys voila by safeway|C|
+Walmart|oth| wal-mart supercenter#1018 wal-mart supercenter#1208||
+Watershed Grill|din|watershed grill||
+Wendy's|din|wendys wendys wendy's restaurant #6549|C|Reported at select locations only.
+West Coast Motel & Fi|oth|sq *west coast motel & fi||
+WestJet|oth|flight||
+Westwood Honda|oth|westwood honda||
+White Spot|din|||
+Whole Foods|g5|||
+Winners|oth|||
+Yellow Dog Brewing|din|tst-yellow dog brewing||
+YouTube Premium|str|youtube youtube|C|
+Zab Bite Express|din|zab bite express||
+Zehrs|g5|||`.split("\n").map(l=>{const[n,c,a,f,nt]=l.split("|");return{n,c,a:(n+" "+a).toLowerCase(),q:/\?/.test(f||""),x:/A/.test(f||""),k:/C/.test(f||""),nt:nt||""}});
+
+const $=id=>document.getElementById(id);
+let pick=null, cat=null;
+const norm=s=>s.toLowerCase().replace(/[’'.]/g,"");
+
+function render(){
+  const q=norm($("q").value.trim());
+  const L=$("list");L.innerHTML="";
+  if(q&&!pick){
+    const hits=D.filter(m=>norm(m.a).includes(q)).slice(0,6);
+    hits.forEach(m=>{
+      const b=document.createElement("button");b.className="m";
+      b.innerHTML=`<span>${m.n}</span><em>${CATS[m.c].n}</em>`;
+      b.onclick=()=>{pick=m;cat=null;$("q").value=m.n;$("q").blur();render();reveal()};
+      L.appendChild(b);
+    });
+    if(!hits.length)L.innerHTML=`<p class="none">No match. Pick a category below.</p>`;
+  }
+  const chips=$("chips");chips.innerHTML="";
+  Object.keys(CATS).forEach(k=>{
+    const b=document.createElement("button");b.textContent=CATS[k].n;
+    b.setAttribute("aria-pressed",cat===k&&!pick);
+    if(cat===k&&!pick)b.className="on";
+    b.onclick=()=>{cat=k;pick=null;$("q").value="";render();reveal()};
+    chips.appendChild(b);
+  });
+  result();
+}
+function reveal(){setTimeout(()=>$("out").scrollIntoView({behavior:"smooth",block:"nearest"}),60)}
+
+function result(){
+  const o=$("out");
+  const c=pick?pick.c:cat;
+  if(!c){o.innerHTML="";return}
+  const fx=$("fx").checked, amt=parseFloat($("amt").value)||100;
+  const noAmex=pick&&pick.x;
+  const rate=fx?1:CATS[c].r;
+  const useAmex=!noAmex&&rate*PT*100>WS;
+  const pts=Math.floor(amt*rate);
+  const wsCash=(amt*WS/100);
+  let h;
+  if(useAmex){
+    h=`<section class="res"><h2>Scotia Amex Gold</h2>
+    <div class="big">${pts.toLocaleString()} pts</div>
+    <p class="mute">${rate}x on $${amt.toFixed(2)} ≈ $${(pts*PT).toFixed(2)} in travel value</p>
+    <table class="cmp"><tr><td>Amex Gold</td><td>${rate}% back (${rate} pts/$)</td></tr><tr><td>Wealthsimple</td><td>2% = $${wsCash.toFixed(2)} cash</td></tr></table>`;
+  }else{
+    h=`<section class="res ws"><h2>Wealthsimple Visa</h2>
+    <div class="big">$${wsCash.toFixed(2)} back</div>
+    <p class="mute">2% on $${amt.toFixed(2)}</p>
+    <table class="cmp"><tr><td>Amex Gold</td><td>${noAmex?"not accepted":rate+"% ("+rate+" pt/$)"}</td></tr><tr><td>Wealthsimple</td><td>2% cash</td></tr></table>`;
+  }
+  if(noAmex)h+=`<p class="warn">This merchant doesn't take Amex in Canada.</p>`;
+  if(fx)h+=`<p class="mute">Foreign currency: Amex earns only 1x (no foreign transaction fee, though).</p>`;
+  if(pick){if(pick.k)h+=`<p class="mute">Confirmed by cardholder reports.</p>`;else if(pick.q)h+=`<p class="warn">My guess from the merchant type. Check your first statement.</p>`;else h+=`<p class="mute">Likely, based on merchant type. Not confirmed.</p>`;if(pick.nt)h+=`<p class="warn">${pick.nt}</p>`}
+  if(!$("amt").value)h+=`<p class="mute">Showing a $100 example. Enter an amount above.</p>`;
+  h+=`<p class="mute">Valuing 1 point at 1¢.</p></section>`;
+  o.innerHTML=h;
+}
+
+$("q").addEventListener("input",()=>{pick=null;if($("q").value)cat=null;render()});
+$("amt").addEventListener("input",result);
+$("fx").addEventListener("change",result);
+render();
+</script>
+</body>
+</html>
